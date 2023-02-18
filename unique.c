@@ -3,6 +3,7 @@
 
 
 int isUnique(char word[], char wordList[MAX_LENGTH][MAX_LENGTH], int count);
+int appendWord(char word[], char wordList[MAX_LENGTH][MAX_LENGTH], int count);
 
 
 int isUnique(char word[], char wordList[MAX_LENGTH][MAX_LENGTH], int count)
@@ -23,38 +24,38 @@ int isUnique(char word[], char wordList[MAX_LENGTH][MAX_LENGTH], int count)
     return 1;
 }
 
+int appendWord(char word[], char wordList[MAX_LENGTH][MAX_LENGTH], int count)
+{
+    int j = 0;
+    while (word[j] != '\0') {
+        wordList[count][j] = word[j];
+        j++;
+    }
+    wordList[count][j] = '\0';
+    count++;
+    return count;
+}
+
 int main() {
-    char uniqueWords[MAX_LENGTH][MAX_LENGTH]; // array to store uniqueWords
-    int uniqueCount = 0;
+
+    int wordCount = 0;
+    char uniqueWords[MAX_LENGTH][MAX_LENGTH]; /* array to store uniqueWords */
     
-    // read one word from stdin
-    char word[MAX_LENGTH];
-
-    while (fscanf(stdin, "%s", word) != EOF) {
-
-
-        if (isUnique(word, uniqueWords, uniqueCount))
+    
+    char word[MAX_LENGTH];                      /* Buffer to store next word */
+    while (fscanf(stdin, "%s", word) != EOF) 
+    {
+        if (isUnique(word, uniqueWords, wordCount))
         {
-            int j = 0;
-            while (word[j] != '\0') {
-                uniqueWords[uniqueCount][j] = word[j];
-                j++;
-            }
-            uniqueWords[uniqueCount][j] = '\0';
-            uniqueCount++;
-        }    
-        // check if word is already in array
-        
-        
-        // add new word to array
-        
+            wordCount = appendWord(word, uniqueWords, wordCount);
+        }            
     }
     
     // print unique uniqueWords
-    for (int i = 0; i < uniqueCount; i++) {
-            fprintf(stdout, "%s\n", uniqueWords[i]);
-        }
-    
+    for (int i = 0; i < wordCount; i++) 
+    {
+        fprintf(stdout, "%s ", uniqueWords[i]);
+    }
     
     return 0;
 }
