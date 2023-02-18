@@ -32,6 +32,31 @@ Program Name: crunch
     Return: 0 on completion
     Allowed Imports: stdio.h stdlib.h time.h */
 
+/* Constants */
+struct Arguments;
+int BUFFER_LIMIT = 10000;
+
+
+/* Program Flow */
+struct Arguments* initArgs();
+void crunch(struct Arguments* arguments);
+    char* fillBuffer(char* buffer, int limit);
+    char* selectRandomWords(char* wordStream, int minLength);
+        int canConstruct();
+        void alertUser();
+    void splitRandomWords(char* wordStream, int wordPreference);
+    void removeSpace(char* wordStream, int shouldRemove);
+
+
+
+/* Helper Functions */
+int strEqual(char* stringOne, char* stringTwo);
+int nextArgValid(int argc, int index);
+int flagIs(char* arg, char* flag);
+void setArgToNext(int* argVar, char* currentArg);
+
+/* ********************************************************************************************************** */
+
 struct Arguments 
 {
     int degreeFlag; // -d
@@ -40,66 +65,51 @@ struct Arguments
     int spaceFlag; // -s
 };
 
-
-/* Program Flow */
-struct Arguments* initializeArgs();
-void crunch(struct Arguments* arguments);
-    char* fillBuffer(char* buffer, int limit);
-
-
-
-
-/* Helper Functions */
-int strEqual(char* stringOne, char* stringTwo);
-
-
-/* ********************************************************************************************************** */
-
-void printArg(int argc, char** argv, int index, int* variable, char* flagName)
+/* Set Default Args, Return in struct to be passed easily */
+struct Arguments* initArgs()
 {
-    if (strEqual(argv[index], "-d") == 1)
-            {
-                if (!((index + 1) > (argc - 1)))        /* Avoid segmentation fault by checking if arg passed after flag */
-                {
-                    *variable = atoi(argv[index+1]);   /* Convert string passed after flag to integer */
-                }
-                printf("%s = %d\n", flagName, *variable); /* Integer will be used as value for associated variable */
-            }
+    struct Arguments* argsPtr = (struct Arguments*)malloc(sizeof(struct Arguments));
+    argsPtr->degreeFlag = 4;
+    argsPtr->sizeFlag = 6;
+    argsPtr->countFlag = 1;
+    argsPtr->spaceFlag = 0;
+    return argsPtr;
 }
-
 
 int main (int argc, char** argv)
 {
-    struct Arguments* arguments = initializeArgs();
+    struct Arguments* arguments = initArgs();
     
-    /* Print Value For Each Argument Passed */
+    /* Iterate Through Each Argument Passed And Print Value */
     for (int i = 0; i < argc; i++) 
     {
-            if (strEqual(argv[i], "-d") == 1)
+        char* currentArg = argv[i];
+
+            if (flagIs(currentArg, "-d"))
             {
-                if (!((i + 1) > (argc - 1)))        /* Avoid segmentation fault by checking if arg passed after flag */
+                if (nextArgValid(argc, i))        /* Avoid segmentation fault by checking if arg passed after flag. If not, arg set to 0 */
                 {
-                    arguments->degreeFlag = atoi(argv[i+1]);   /* Convert string passed after flag to integer */
+                    setArgToNext(&arguments->degreeFlag, currentArg);  /* Set value of flag variable to next passed value */
                 }
-                printf("degreeFlag = %d\n", arguments->degreeFlag); /* Integer will be used as value for associated variable */
+                printf("degreeFlag = %d\n", arguments->degreeFlag);
             }
-            if (strEqual(argv[i], "-m") == 1)
+            if (flagIs(currentArg, "-m"))
             {
-                if (!((i + 1) > (argc - 1)))
+                if (nextArgValid(argc, i))       
                 {
-                    arguments->sizeFlag = atoi(argv[i+1]);
+                    setArgToNext(&arguments->sizeFlag, currentArg);   
                 }
                 printf("sizeFlag = %d\n", arguments->sizeFlag); 
             }
-            if (strEqual(argv[i], "-n") == 1)
+            if (flagIs(currentArg, "-n"))
             {
-                if (!((i + 1) > (argc - 1)))
+                if (nextArgValid(argc, i))        
                 {
-                    arguments->countFlag = atoi(argv[i+1]);
+                    setArgToNext(&arguments->countFlag, currentArg);   
                 }
                 printf("countFlag = %d\n", arguments->countFlag); 
             }
-            if (strEqual(argv[i], "-s") == 1)
+            if (flagIs(currentArg, "-s"))
             {
                 arguments->spaceFlag == 1;
                 printf("spaceFlag = %d\n", arguments->spaceFlag);
@@ -112,23 +122,75 @@ int main (int argc, char** argv)
     return 0;
 }
 
-/* Set Default Args, Return in struct to be passed easily */
-struct Arguments* initializeArgs()
+/* Used to list flag options */
+int flagIs(char* currentArg, char* flag)
 {
-    struct Arguments* argsPtr = (struct Arguments*)malloc(sizeof(struct Arguments));
-    argsPtr->degreeFlag = 4; // -d
-    argsPtr->sizeFlag = 6; // -m
-    argsPtr->countFlag = 1; // -n
-    argsPtr->spaceFlag = 0; // -s
-    return argsPtr;
+    return (strEqual(currentArg, flag) == 1) ? 1 : 0; 
 }
+
+/* Helper function equivalent to standard library strcmp() function */
+int strEqual(char* stringOne, char* stringTwo)
+{
+    // iterate through string, if a character differs return false
+    while (*stringOne)
+    {
+        if (*stringOne != *stringTwo) { return 0; }
+        stringOne++;
+        stringTwo++;
+    }
+    return 1; // if end of string reached with no difference, return true
+}
+
+/* Checks if arg after current isn't out of bounds of arg count */
+int nextArgValid(int argc, int index)
+{
+    return !((index + 1) > (argc - 1)) ?  1 : 0; 
+}
+
+/* Convert next argument to integer and store in arguments struct */
+void setArgToNext(int* argVar, char* currentArg)
+{
+    *argVar = atoi(currentArg+3); 
+}
+
+
+
 
 /* Fill Buffer, Perform Output Based On Requirement */
 void crunch(struct Arguments* arguments)
 {
-    char buffer[10000];
-    char* stream = fillBuffer(buffer, 10000);
+    char buffer[BUFFER_LIMIT];
+    char* stream = fillBuffer(buffer, BUFFER_LIMIT);
+
 }
+
+char* selectRandomWords(char* wordStream, int minLength)
+{
+    char buffer[BUFFER_LIMIT];
+    int i = 0;
+    int currLength = 0;
+
+    while (*wordStream != EOF)
+    {
+        wordStream[i];
+
+        if (strEqual(wordStream[i], " "))
+        {
+            currLength = 0;
+        }
+    }
+}
+
+int canConstruct()
+{
+
+}
+
+void alertUser()
+{
+
+}
+
 
 /* Given pointer to buffer array, fills it until stdin EOF or defined limit reached */
 char* fillBuffer(char* buffer, int limit)
@@ -149,21 +211,3 @@ char* fillBuffer(char* buffer, int limit)
     return buffer;
 }
 
-/* Helper function equivalent to standard library strcmp() function */
-int strEqual(char* stringOne, char* stringTwo)
-{
-    int equal = 1;
-    int i = 0;
-    while (*stringOne)
-    {
-        // if characters differ, or end of the second string is reached
-        if (*stringOne != *stringTwo) {
-            equal = 0;
-        }
- 
-        // move to the nestringOnet pair of characters
-        stringOne++;
-        stringTwo++;
-    }
-    return equal;
-}
