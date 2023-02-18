@@ -1,29 +1,40 @@
 #include <stdio.h>
 #define MAX_LENGTH 100
 
+
+int isUnique(char word[], char wordList[MAX_LENGTH][MAX_LENGTH], int count);
+
+
+int isUnique(char word[], char wordList[MAX_LENGTH][MAX_LENGTH], int count)
+{
+    int i;
+    int j;
+    for (i = 0; i < count; i++)
+    {
+        j = 0;
+        while (wordList[i][j] == word[j])
+        {
+            if (word[j] == '\0') {
+                return 0;
+            }
+        j++;
+        }
+    }
+    return 1;
+}
+
 int main() {
     char uniqueWords[MAX_LENGTH][MAX_LENGTH]; // array to store uniqueWords
     int uniqueCount = 0;
     
     // read one word from stdin
     char word[MAX_LENGTH];
+
     while (fscanf(stdin, "%s", word) != EOF) {
-        
-        // check if word is already in array
-        int found = 0;
-        for (int i = 0; i < uniqueCount; i++) {
-            int j = 0;
-            while (uniqueWords[i][j] == word[j]) {
-                if (word[j] == '\0') {
-                    found = 1;
-                    break;
-                }
-                j++;
-            }
-        }
-        
-        // add new word to array
-        if (!found) {
+
+
+        if (isUnique(word, uniqueWords, uniqueCount))
+        {
             int j = 0;
             while (word[j] != '\0') {
                 uniqueWords[uniqueCount][j] = word[j];
@@ -31,7 +42,12 @@ int main() {
             }
             uniqueWords[uniqueCount][j] = '\0';
             uniqueCount++;
-        }
+        }    
+        // check if word is already in array
+        
+        
+        // add new word to array
+        
     }
     
     // print unique uniqueWords
@@ -41,29 +57,4 @@ int main() {
     
     
     return 0;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-int strEqual(char* stringOne, char* stringTwo)
-{
-    // iterate through string, if a character differs return false
-    while (*stringOne)
-    {
-        if (*stringOne != *stringTwo) { return 0; }
-        stringOne++;
-        stringTwo++;
-    }
-    return 1; // if end of string reached with no difference, return true
 }

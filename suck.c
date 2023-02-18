@@ -2,10 +2,10 @@
 #define MAX_LENGTH 100
 
 
-int isUnique(char word[], char* wordList[], int count);
+int isUnique(char word[], char wordList[MAX_LENGTH][MAX_LENGTH], int count);
 
 
-int isUnique(char word[], char* wordList[], int count)
+int isUnique(char word[], char wordList[MAX_LENGTH][MAX_LENGTH], int count)
 {
     int i;
     int j;
