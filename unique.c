@@ -29,21 +29,20 @@ int main() {
 /* If stdin has more input, place it into the buffer */
 int nextWordExists(char buffer[])
 {
-    return (fscanf(stdin, "%s", buffer) != EOF) ? 1:0;
+    return (fscanf(stdin, "%s", buffer) != EOF) ? 1 : 0;
 }
-
 
 /* Compares current word to every word in our list and return 0 if it finds a match */
 int isUnique(char word[], char wordList[WORD_LENGTH][WORD_LENGTH], int count)
 {
     int i;
     int j;
-    for (i = 0; i < count; i++)         // For each words in list
+    for (i = 0; i < count; i++)               // For each words in list
     {
         j = 0;
-        while (wordList[i][j] == word[j])      // compare each letter of word in list and word in question
+        while (wordList[i][j] == word[j])     // compare each letter of word in list and word in question
         {
-            if (word[j] == '\0') {             // if null character reached we know words are equal, not unique
+            if (word[j] == '\0') {            // if null character reached we know words are equal, not unique
                 return 0;
             }
         j++;

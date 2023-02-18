@@ -1,5 +1,7 @@
 #include "crunch.h"
 #include <string.h>
+#define MAX_WORD_LEN 50
+
 
 /*  This program randomly combines words contained in its input stream and sends them 
 to the output stream. At program execution, the application shall read in the entire set of words 
@@ -34,13 +36,13 @@ Program Name: crunch
 
 /* Constants */
 struct Arguments;
-int BUFFER_LIMIT = 10000;
-
+struct WordList;
 
 /* Program Flow */
 struct Arguments* initArgs();
+struct WordList* generateWordlist();
 void crunch(struct Arguments* arguments);
-    char* fillBuffer(char* buffer, int limit);
+    char** fillWordList(char buffer[MAX_WORD_LEN][MAX_WORD_LEN]);
     char* selectRandomWords(char* wordStream, int minLength);
         int canConstruct();
         void alertUser();
@@ -153,32 +155,70 @@ void setArgToNext(int* argVar, char* currentArg)
     *argVar = atoi(currentArg+3); 
 }
 
+void printWords(char wordList[MAX_WORD_LEN][MAX_WORD_LEN], int count)
+{
+    for (int i = 0; i < count; i++) 
+    {
+        fprintf(stdout, "%s ", wordList[i]); 
+    }
+}
 
 
+/****************************************AFTER ARGUMENT HANDLING************************************************/
+
+
+struct WordList
+{
+    int size;
+    char words[MAX_WORD_LEN][MAX_WORD_LEN];
+};
+
+struct WordList* generateWordlist()
+{
+    struct WordList* wordList = (struct WordList*)malloc(sizeof(struct WordList));
+    int i = 0;
+    int j = 0;
+    char buffer[MAX_WORD_LEN];
+
+    while ((fscanf(stdin, "%s", buffer) != EOF))
+    {
+        j = 0;
+        while (buffer[j] != '\0')
+        {
+            wordList->words[i][j] = buffer[j];
+            j++;
+        }
+        wordList->words[i][j] = '\0';
+        i++;
+        j++;
+    }
+
+    wordList->size = i;
+    return wordList;
+}
 
 /* Fill Buffer, Perform Output Based On Requirement */
 void crunch(struct Arguments* arguments)
 {
-    char buffer[BUFFER_LIMIT];
-    char* stream = fillBuffer(buffer, BUFFER_LIMIT);
-
+    struct WordList* wordList = generateWordlist();
+    printWords(wordList->words, wordList->size);
 }
 
 char* selectRandomWords(char* wordStream, int minLength)
 {
-    char buffer[BUFFER_LIMIT];
-    int i = 0;
-    int currLength = 0;
+    // char buffer[MAX_WORD_LEN];
+    // int i = 0;
+    // int currLength = 0;
 
-    while (*wordStream != EOF)
-    {
-        wordStream[i];
+    // while (*wordStream != EOF)
+    // {
+    //     wordStream[i];
 
-        if (strEqual(wordStream[i], " "))
-        {
-            currLength = 0;
-        }
-    }
+    //     if (strEqual(wordStream[i], " "))
+    //     {
+    //         currLength = 0;
+    //     }
+    // }
 }
 
 int canConstruct()
@@ -193,21 +233,20 @@ void alertUser()
 
 
 /* Given pointer to buffer array, fills it until stdin EOF or defined limit reached */
-char* fillBuffer(char* buffer, int limit)
-{
-    int nextChar;
-    int index = 0;
 
-    while ((nextChar = getchar()) != EOF && index < limit) /* Use Standard getChar() to place stream into array */
-    {
-        buffer[index] = nextChar;
-        ++index;
-    }
 
-    for (int i = 0; i < index; ++i)
-        putchar(buffer[i]);
-        putchar('\n'); 
+// int nextChar;
+//     int index = 0;
+
+//     while ((nextChar = getchar()) != EOF && index < limit) /* Use Standard getChar() to place stream into array */
+//     {
+//         buffer[index] = nextChar;
+//         ++index;
+//     }
+
+//     for (int i = 0; i < index; ++i)
+//         putchar(buffer[i]);
+//         putchar('\n'); 
     
-    return buffer;
-}
+//     return buffer;
 
