@@ -1,55 +1,32 @@
-#include "crunch.h"
-#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #define MAX_WORD_LEN 50
 
 
-/*  This program randomly combines words contained in its input stream and sends them 
-to the output stream. At program execution, the application shall read in the entire set of words 
-to use during the combination process. After reaching the EOF symbol, the program shall then 
-begin randomly selecting words and combining them into a concatenated output word. By 
-default, the program produces only one combined output word for each execution, but users 
-may change this behavior by providing an optional command line argument (through *argv). 
+/*  @author: Conner Sommerfield
+ *  Program to pick random strings from stdin and output them to the user with conditions provided at command line
+ * -d <degree> Number of words from input stream to combine in each crunched output (default = 4). 
+ * -m <size> The minimum length of each word used (default = 6). 
+ * -n <count> Number of output strings to produce (default = 1). 
+ * -s Indicates to insert a space between the output words (default = none)
+ */
 
-    The words the program selects must meet minimum length criteria, and users may also 
-change this value at program execution to meet their needs. The program must accept this.
- By default, the program squeezes the words together and omits any spacing between 
-them (e.g., somewhatlikethisbutrandom), but users may override this behavior with a command 
-line argument as well, and the program will produce output with the user specified parameter.
-The command line arguments may appear in any order.
 
-    When unable to construct strings meeting the minimum length from the input stream, 
-the program shall alert the user to an error and suggest corrective action.
- There shall be no duplicate words in any single output combination, but the same word 
-may appear twice in the total output when producing more than one string (i.e. -n specified >1)
-
-Program Name: crunch
-    Command Line Args: -d <degree> Number of words from input stream to combine in each 
-    crunched output (default =4). 
-    -m <size> The minimum length of each word used (default =6). 
-    -n <count> Number of output strings to produce (default =1). 
-    -s Indicates to insert a space between the output words 
-    (default=none).
-    Program Input: stdin
-    Program Output: stdout
-    Return: 0 on completion
-    Allowed Imports: stdio.h stdlib.h time.h */
-
-/* Constants */
+/* Structs */
 struct Arguments;
 struct WordList;
 
-/* Program Flow */
+
+/* Program Flow - Main Implied */
 struct Arguments* initArgs();
-struct WordList* generateWordlist();
 void crunch(struct Arguments* arguments);
-    char** fillWordList(char buffer[MAX_WORD_LEN][MAX_WORD_LEN]);
-    char* selectRandomWords(char* wordStream, int minLength);
-        int canConstruct();
+    struct WordList* generateWordlist();
+    struct WordList* restrictLength(struct WordList*, int minLength);
         void alertUser();
-    void splitRandomWords(char* wordStream, int wordPreference);
-    void removeSpace(char* wordStream, int shouldRemove);
-
-
+    struct WordList* selectRandom(struct WordList* wordList, int degree);
+/*         END PROGRAM        */
+    
 
 /* Helper Functions */
 int strEqual(char* stringOne, char* stringTwo);
@@ -57,7 +34,14 @@ int nextArgValid(int argc, int index);
 int flagIs(char* arg, char* flag);
 void setArgToNext(int* argVar, char* currentArg);
 
+int appendWord(char word[], char wordList[MAX_WORD_LEN][MAX_WORD_LEN], int count);
+int isUnique(char word[], char wordList[MAX_WORD_LEN][MAX_WORD_LEN], int count);
+void alertUser();
+void printWords(char wordList[MAX_WORD_LEN][MAX_WORD_LEN], int count, int crunch);
+
+
 /* ********************************************************************************************************** */
+
 
 struct Arguments 
 {
@@ -93,7 +77,6 @@ int main (int argc, char** argv)
                 {
                     setArgToNext(&arguments->degreeFlag, currentArg);  /* Set value of flag variable to next passed value */
                 }
-                printf("degreeFlag = %d\n", arguments->degreeFlag);
             }
             if (flagIs(currentArg, "-m"))
             {
@@ -101,7 +84,6 @@ int main (int argc, char** argv)
                 {
                     setArgToNext(&arguments->sizeFlag, currentArg);   
                 }
-                printf("sizeFlag = %d\n", arguments->sizeFlag); 
             }
             if (flagIs(currentArg, "-n"))
             {
@@ -109,14 +91,17 @@ int main (int argc, char** argv)
                 {
                     setArgToNext(&arguments->countFlag, currentArg);   
                 }
-                printf("countFlag = %d\n", arguments->countFlag); 
             }
             if (flagIs(currentArg, "-s"))
             {
-                arguments->spaceFlag == 1;
-                printf("spaceFlag = %d\n", arguments->spaceFlag);
+                arguments->spaceFlag = 1;
             }
     }
+            printf("degreeFlag = %d\n", arguments->degreeFlag);
+            printf("sizeFlag = %d\n", arguments->sizeFlag); 
+            printf("countFlag = %d\n", arguments->countFlag); 
+            printf("spaceFlag = %d\n", arguments->spaceFlag);
+            printf("\n\n");
 
     crunch(arguments);                          /* Run Functionality */
     free(arguments);                            /* Cleanup */
@@ -155,14 +140,6 @@ void setArgToNext(int* argVar, char* currentArg)
     *argVar = atoi(currentArg+3); 
 }
 
-void printWords(char wordList[MAX_WORD_LEN][MAX_WORD_LEN], int count)
-{
-    for (int i = 0; i < count; i++) 
-    {
-        fprintf(stdout, "%s ", wordList[i]); 
-    }
-}
-
 
 /****************************************AFTER ARGUMENT HANDLING************************************************/
 
@@ -173,12 +150,12 @@ struct WordList
     char words[MAX_WORD_LEN][MAX_WORD_LEN];
 };
 
+/* Returns a struct that contains a 2D string array and the number of words it contains */
 struct WordList* generateWordlist()
 {
     struct WordList* wordList = (struct WordList*)malloc(sizeof(struct WordList));
-    int i = 0;
-    int j = 0;
     char buffer[MAX_WORD_LEN];
+    int i = 0; int j = 0;
 
     while ((fscanf(stdin, "%s", buffer) != EOF))
     {
@@ -201,52 +178,122 @@ struct WordList* generateWordlist()
 void crunch(struct Arguments* arguments)
 {
     struct WordList* wordList = generateWordlist();
-    printWords(wordList->words, wordList->size);
+    struct WordList* validWords = restrictLength(wordList, arguments->sizeFlag);
+    
+    struct WordList* randomWords;
+    for (int i = 0; i < arguments->countFlag; i++)
+    {
+        randomWords = selectRandom(validWords, arguments->degreeFlag);
+        printWords(randomWords->words, randomWords->size, arguments->spaceFlag);
+        printf(" ");
+    }
+
+    free(validWords);
+    free(wordList);
+    free(randomWords);
 }
 
-char* selectRandomWords(char* wordStream, int minLength)
+/*  */
+struct WordList* restrictLength(struct WordList* wordlist, int minLength)
 {
-    // char buffer[MAX_WORD_LEN];
-    // int i = 0;
-    // int currLength = 0;
+    struct WordList* validWords = (struct WordList*)malloc(sizeof(struct WordList));
+    int i = 0; int j = 0; int wordLength = 0; validWords->size = 0;
 
-    // while (*wordStream != EOF)
-    // {
-    //     wordStream[i];
-
-    //     if (strEqual(wordStream[i], " "))
-    //     {
-    //         currLength = 0;
-    //     }
-    // }
+    for (i = 0; i < wordlist->size; i++)
+    {
+        while (wordlist->words[i][j] != '\0')
+        {
+            wordLength++;
+            j++;
+        }
+        if (wordLength >= minLength)
+        {
+            validWords->size = appendWord(wordlist->words[i], validWords->words, validWords->size);
+        }
+        wordLength = 0;
+        j = 0;
+    }
+    if (validWords->size == 0)
+    {
+        alertUser();
+    }
+    return validWords;
 }
 
-int canConstruct()
+/*  */
+struct WordList* selectRandom(struct WordList* wordList, int degree)
 {
+    struct WordList* randomWords = (struct WordList*)malloc(sizeof(struct WordList));
 
+    srand((long int)randomWords);                                         // seed the random generator
+
+    if (wordList->size == 0 || wordList->size < degree) {return randomWords;}          // Can't select from empty list
+
+    for (int i = 0; i < degree; i++)
+    {
+        int randomIndex = rand() % wordList->size;          // Pick random index in range [0 : wordlist size]
+        if (!isUnique(wordList->words[randomIndex], randomWords->words, wordList->size)) 
+        {
+            i--;                                            // Don't count iteration if word not selected
+            continue;                                       // Don't pick same word twice
+        }
+        randomWords->size = appendWord(wordList->words[randomIndex], randomWords->words, randomWords->size);
+    }
+    return randomWords;
 }
 
+/*  */
+int appendWord(char word[], char wordList[MAX_WORD_LEN][MAX_WORD_LEN], int count)
+{
+    int j = 0;
+    while (word[j] != '\0')
+    {
+        wordList[count][j] = word[j];      // Set letters of current word in list to letters of word 
+        j++;
+    }
+    wordList[count][j] = '\0';
+    count++;                               // Needed so we can differentiate between strings
+    return count;                          // Number of words in list increased by 1
+}
+
+/*  */
+int isUnique(char word[], char wordList[MAX_WORD_LEN][MAX_WORD_LEN], int count)
+{
+    int i;
+    int j;
+    for (i = 0; i < count; i++)               // For each words in list
+    {
+        j = 0;
+        while (wordList[i][j] == word[j])     // compare each letter of word in list and word in question
+        {
+            if (word[j] == '\0') {            // if null character reached we know words are equal, not unique
+                return 0;
+            }
+        j++;
+        }
+    }
+    return 1;
+}
+
+/*  */
+void printWords(char wordList[MAX_WORD_LEN][MAX_WORD_LEN], int wordCount, int crunch)
+{
+    for (int i = 0; i < wordCount; i++) 
+    {   
+        if (crunch)
+        {
+            fprintf(stdout, "%s", wordList[i]); 
+        }
+        else
+        {
+            fprintf(stdout, "%s ", wordList[i]);
+        }
+    }
+}
+
+/*  */
 void alertUser()
 {
-
+    printf("There aren't any words in the text with that length, sorry!\n");
 }
-
-
-/* Given pointer to buffer array, fills it until stdin EOF or defined limit reached */
-
-
-// int nextChar;
-//     int index = 0;
-
-//     while ((nextChar = getchar()) != EOF && index < limit) /* Use Standard getChar() to place stream into array */
-//     {
-//         buffer[index] = nextChar;
-//         ++index;
-//     }
-
-//     for (int i = 0; i < index; ++i)
-//         putchar(buffer[i]);
-//         putchar('\n'); 
-    
-//     return buffer;
 
