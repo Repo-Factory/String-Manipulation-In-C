@@ -1,16 +1,25 @@
 #include <stdio.h>
-#define WORD_LENGTH 50
+#define WORD_LENGTH 30
+#define WORD_AMOUNT 1000
 
-/* Program Flow */
+/*  
+ *  @author: Conner Sommerfield
+ *  Program to get all unique strings from stdin
+ *  Command Line Arguments - None
+ *  Call with ./unique < randomText.txt
+ */
+
+
+/* Program Flow - Main Implied */
 int nextWordExists(char buffer[]);
-int isUnique(char word[], char wordList[WORD_LENGTH][WORD_LENGTH], int count);
-int appendWord(char word[], char wordList[WORD_LENGTH][WORD_LENGTH], int count);
-void printWords(char wordList[WORD_LENGTH][WORD_LENGTH], int count);
+int isUnique(char word[], char wordList[WORD_AMOUNT][WORD_LENGTH], int count);
+int appendWord(char word[], char wordList[WORD_AMOUNT][WORD_LENGTH], int count);
+void printWords(char wordList[WORD_AMOUNT][WORD_LENGTH], int count);
 
 int main() {
 
     int wordCount = 0;
-    char uniqueWords[WORD_LENGTH][WORD_LENGTH];     // Empty list that will store words
+    char uniqueWords[WORD_AMOUNT][WORD_LENGTH];     // Empty list that will store words
     char buffer[WORD_LENGTH];                       // Will temporarily store each word
 
     while (nextWordExists(buffer))                  // Read next word from input into buffer
@@ -29,14 +38,13 @@ int main() {
 /* If stdin has more input, place it into the buffer */
 int nextWordExists(char buffer[])
 {
-    return (fscanf(stdin, "%s", buffer) != EOF) ? 1 : 0;
+    return (fscanf(stdin, "%s", buffer) != EOF);
 }
 
 /* Compares current word to every word in our list and return 0 if it finds a match */
-int isUnique(char word[], char wordList[WORD_LENGTH][WORD_LENGTH], int count)
+int isUnique(char word[], char wordList[WORD_AMOUNT][WORD_LENGTH], int count)
 {
-    int i;
-    int j;
+    int i; int j;                             // i is word; j is letter
     for (i = 0; i < count; i++)               // For each words in list
     {
         j = 0;
@@ -52,7 +60,7 @@ int isUnique(char word[], char wordList[WORD_LENGTH][WORD_LENGTH], int count)
 }
 
 /* Adds our unique word to the list and returns the new number of words in the list (previous + 1) */
-int appendWord(char word[], char wordList[WORD_LENGTH][WORD_LENGTH], int count)
+int appendWord(char word[], char wordList[WORD_AMOUNT][WORD_LENGTH], int count)
 {
     int j = 0;
     while (word[j] != '\0')
@@ -66,7 +74,7 @@ int appendWord(char word[], char wordList[WORD_LENGTH][WORD_LENGTH], int count)
 }
 
 /* Simple helper to print words of list */
-void printWords(char wordList[WORD_LENGTH][WORD_LENGTH], int count)
+void printWords(char wordList[WORD_AMOUNT][WORD_LENGTH], int count)
 {
     for (int i = 0; i < count; i++) 
     {
